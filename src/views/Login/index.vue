@@ -67,7 +67,14 @@ export default {
       try {
         const res = await login(this.mobile, this.code)
         console.log(res)
-      } catch (err) {}
+        this.$toast.success('登陆成功')
+      } catch (err) {
+        if (err.response.status === 400) {
+          this.$toast.fail('手机验证码错误')
+        } else {
+          this.$toast.fail('登陆失败，请稍后重试')
+        }
+      }
     }
   }
 }
