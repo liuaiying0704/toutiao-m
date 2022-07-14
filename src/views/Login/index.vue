@@ -59,8 +59,15 @@ export default {
     // }
     // 给登陆按钮绑定事件，事件名修改为login
     async onSubmit () {
-      const res = await login(this.mobile, this.code)
-      console.log(res)
+      this.$toast.loading({
+        message: '登陆中',
+        forbidClick: true, // 禁用背景点击
+        duration: 0 // 持续时间为0，则持续展示
+      })
+      try {
+        const res = await login(this.mobile, this.code)
+        console.log(res)
+      } catch (err) {}
     }
   }
 }
