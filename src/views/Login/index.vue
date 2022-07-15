@@ -86,6 +86,7 @@ export default {
         const res = await login(this.mobile, this.code)
         //  存储token
         this.$store.commit('setUser', res.data.data)
+        this.$router.push('/profile')
         this.$toast.success('登陆成功')
       } catch (err) {
         const status = err.response.status
