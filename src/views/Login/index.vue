@@ -4,12 +4,12 @@
       <template #left><van-icon name="cross" /> </template>
     </van-nav-bar>
     <!-- 手机、验证码表单 -->
-    <van-form @submit="onSubmit" class="form">
+    <van-form @submit="login" class="form" ref="form">
       <van-field
         v-model="mobile"
         name="mobile"
         placeholder="请输入手机号"
-        :rules="[{ required: true, message: '请输入手机号' }]"
+        :rules="mobileRules"
       >
         <template #label>
           <span class="iconfont toutiao-shouji"></span>
@@ -18,9 +18,8 @@
       <van-field
         v-model="code"
         name="code"
-        type="password"
         placeholder="请输入验证码"
-        :rules="[{ required: true, message: '请输入验证码' }]"
+        :rules="codeRules"
       >
         <!-- 左侧图标 -->
         <template #label>
@@ -28,7 +27,21 @@
         </template>
         <!-- 右侧按钮 发送验证码-->
         <template #right-icon>
-          <van-button class="code-btn" size="mini" round>发送验证码</van-button>
+          <van-count-down
+            v-if="isShow"
+            :time="5 * 1000"
+            @finish="isShow = false"
+          />
+          <van-button
+            class="code-btn"
+            size="mini"
+            round
+            v-else
+            @click="sendCode"
+            native-type="button"
+          >
+            发送验证码</van-button
+          >
         </template>
       </van-field>
       <div style="margin: 16px">
@@ -41,13 +54,17 @@
 <script>
 // form表单的button点击触发submit，提交表单，需要绑定name，用于标识
 // import { Toast } from 'vant'
-import { login } from '@/api/user'
+import { login, sendCode } from '@/api/user'
+import { mobileRules, codeRules } from './rules'
 export default {
   name: 'Login',
   data () {
     return {
       mobile: '',
-      code: ''
+      code: '',
+      mobileRules,
+      codeRules,
+      isShow: false
     }
   },
   methods: {
@@ -57,8 +74,9 @@ export default {
     // onSubmit (values) {
     //   console.log('submit', values)
     // }
-    // 给登陆按钮绑定事件，事件名修改为login
-    async onSubmit () {
+
+    // 1、登陆按钮绑定事件，事件名修改为login
+    async login () {
       this.$toast.loading({
         message: '登陆中',
         forbidClick: true, // 禁用背景点击
@@ -66,8 +84,51 @@ export default {
       })
       try {
         const res = await login(this.mobile, this.code)
-        console.log(res)
-      } catch (err) {}
+        //  存储token
+        this.$store.commit('setUser', res.data.data)
+        this.$toast.success('登陆成功')
+      } catch (err) {
+        const status = err.response.status
+        let message = '登陆错误，请刷新~'
+        if (status === 400) {
+          message = err.response.data.message
+        }
+        this.$toast.fail(message)
+        // switch (status) {
+        //   case 400:
+        //     this.$toast.fail(err.response.data.message)
+        //     break
+        //   case 507:
+        //     this.$toast.fail('登陆错误，请刷新~')
+        //     break
+        //   default:
+        //     this.$toast.fail('登陆错误，请刷新~')
+        //     break
+        // }
+      }
+    },
+    // 2、发送验证码
+    async sendCode () {
+      try {
+        // 验证手机号
+        await this.$refs.form.validate('mobile')
+        // 发送请求，获取验证码
+        await sendCode(this.mobile)
+        // 点击按钮显示倒计时
+        this.isShow = true
+      } catch (err) {
+        // 1、校验失败
+        if (!err.response) {
+          this.$toast.fail('手机格式不正确')
+        } else {
+          // 验证码导致的失败
+          const status = err.response.status
+          if (status === 404 || status === 429) {
+            this.$toast.fail(err.response.data.message)
+          }
+          console.log(err.response.data.message)
+        }
+      }
     }
   }
 }
