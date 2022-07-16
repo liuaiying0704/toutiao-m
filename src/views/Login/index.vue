@@ -86,7 +86,9 @@ export default {
         const res = await login(this.mobile, this.code)
         //  存储token
         this.$store.commit('setUser', res.data.data)
+        console.log(this.$store)
         this.$toast.success('登陆成功')
+        this.$router.push('/profile')
       } catch (err) {
         const status = err.response.status
         let message = '登陆错误，请刷新~'
