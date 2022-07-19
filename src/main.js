@@ -13,6 +13,19 @@ import 'amfe-flexible/index.min.js'
 // 4、使用 将 `px` 转为 `rem
 // 下载postcss-pxtorem@5.1.1 -D，新建文件写入代码，无需引入
 
+// 5.dayjs   封装utils下
+// dayjs:https://day.js.org/docs/zh-CN/parse/date
+// import dayjs from 'dayjs'
+// const relativeTime = require('dayjs/plugin/relativeTime')
+// dayjs.extend(relativeTime)
+// require('dayjs/locale/zh-cn')
+// // import 'dayjs/locale/zh-cn' // ES 2015
+// dayjs.locale('zh-cn') // 全局使用
+// dayjs().locale('zh-cn').format() // 当前实例使用
+// // new Date()
+// // console.log(dayjs().format('YYYY-MM-DD HH-mm-ss'))
+
+// 6、
 Vue.use(Vant)
 
 Vue.config.productionTip = false
