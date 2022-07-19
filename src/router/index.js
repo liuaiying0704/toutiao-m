@@ -26,7 +26,9 @@ const routes = [
         component: () => import('@/views/Video')
       }
     ]
-  }
+  },
+  // 搜索页面
+  { path: '/search', component: () => import('@/views/Search') }
 ]
 const router = new VueRouter({
   routes
