@@ -47,6 +47,11 @@
 <script>
 import { articleDetail } from '@/api/detail'
 export default {
+  data () {
+    return {
+      articleDetailItem: {}
+    }
+  },
   created () {
     this.articleDetail()
   },
@@ -56,7 +61,8 @@ export default {
     },
     async articleDetail () {
       const res = await articleDetail(this.$router.history.current.query.id)
-      console.log(res.data.data)
+      this.articleDetailItem = res.data.data
+      console.log(res)
     }
   }
 }
