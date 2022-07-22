@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div @click="detailFn">
     <!-- 无图片的 -->
     <van-cell
       :title="articleInfo.title"
@@ -50,7 +50,8 @@ export default {
   props: {
     articleInfo: {
       type: Object,
-      required: true
+      required: true,
+      id: ''
     }
   },
   computed: {
@@ -58,6 +59,16 @@ export default {
       const art = this.articleInfo
       const relativeTime = dayjs(art.pubdate).fromNow()
       return `${art.aut_name} 评论${art.comm_count} ${relativeTime}`
+    }
+  },
+  methods: {
+    detailFn () {
+      this.$router.push({
+        path: 'detail',
+        query: {
+          id: this.articleInfo.art_id
+        }
+      })
     }
   }
 }

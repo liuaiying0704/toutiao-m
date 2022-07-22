@@ -1,8 +1,13 @@
 <template>
-  <div>
-    <van-cell v-for="(item, index) in highLightData" :key="index">
+  <div class="searchSuggestions-container">
+    <van-cell
+      :title="item"
+      v-for="(item, index) in highLightData"
+      :key="index"
+      @click="SearchSuggestionFn(item)"
+    >
       <template #icon>
-        <van-icon name="search" class="search-icon"></van-icon>
+        <van-icon name="search" class="search-icon" />
       </template>
       <template #title>
         <span v-html="item"></span>
@@ -12,8 +17,9 @@
 </template>
 
 <script>
+// 搜索建议：待做功能
+// 点击建议，获取搜索结果列表
 import { getSearchSuggestion } from '@/api'
-
 export default {
   props: {
     keywords: {
@@ -37,7 +43,7 @@ export default {
     }
   },
   methods: {
-    // 请求建议数据
+    // 1、请求建议数据
     async getSearchSuggestion () {
       try {
         const res = await getSearchSuggestion(this.keywords)
@@ -51,6 +57,13 @@ export default {
       } catch (error) {
         console.log(error)
       }
+    },
+    // 2、点击搜索框
+    SearchSuggestionFn (item) {
+      // console.log(item)
+      // const item = item.(/^<span style="color: red">$/, 1)
+      console.log(item)
+      this.$emit('searchFn', item)
     }
   },
   computed: {
@@ -65,6 +78,10 @@ export default {
 </script>
 
 <style scoped lang="less">
+.searchSuggestions-container {
+  background-color: #f5f7f9;
+  height: calc(100vh - 100px); //100vh  等于视口高度375px
+}
 .search-icon {
   padding-top: 10px;
 }
