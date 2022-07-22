@@ -13,7 +13,13 @@
       />
     </form>
     <!-- 搜索结果、历史、建议 -->
-    <component :is="componentName" :keywords="keywords"></component>
+    <!--    :searchList="searchList" -->
+    <component
+      :is="componentName"
+      :keywords="keywords"
+      @searchFn="searchFn"
+      :results="results"
+    ></component>
   </div>
 </template>
 
@@ -24,6 +30,9 @@
 import SearchHistory from './components/SearchHistory.vue'
 import SearchResults from './components/SearchResults.vue'
 import SearchSuggestions from './components/SearchSuggestions.vue'
+import storage from '@/utils/storage'
+import { getSearchResults } from '@/api/search'
+
 export default {
   components: {
     SearchHistory,
@@ -33,7 +42,10 @@ export default {
   data () {
     return {
       keywords: '',
-      isShowSearchResult: false
+      isShowSearchResult: false,
+      searchList: [],
+      page: 1,
+      results: []
     }
   },
   computed: {
@@ -47,11 +59,30 @@ export default {
       return 'SearchSuggestions'
     }
   },
+  created () {},
   methods: {
-    onSearch () {
+    async onSearch (item) {
       // 回车触发，显示结果
       this.isShowSearchResult = true
+      // 添加keywords到数组
+      if (this.searchList.indexOf(this.keywords) === -1) {
+        this.searchList.unshift(this.keywords)
+        // 存储keywords
+        storage.set('keywords', this.searchList)
+      }
+      // 1、获取搜索结果
+      try {
+        const res = await getSearchResults(this.page, this.keywords)
+        this.results = res.data.data.results || []
+        console.log(this.results)
+      } catch (error) {
+        console.log(error)
+        return []
+      }
     },
+
+    // 2、加载更多
+
     onCancel () {
       this.$router.go(-1)
     },
@@ -59,6 +90,20 @@ export default {
       // 如果keywords没有值，显示搜索
       // 如果keywords有值，显示搜索建议
       this.isShowSearchResult = false
+    },
+    // 点击历史、建议列表数据，调用回车时间，获取搜索结果。
+    searchFn (item) {
+      console.log(item)
+      // 处理数据
+      // const reg = /<span style="color: red">[\s\S]*<\/span>/
+      const span1 = '<span style="color: red">'
+      const span2 = '</span>'
+      item = item
+        .replace(new RegExp(span1, 'g'), '')
+        .replace(new RegExp(span2, 'g'), '')
+      this.keywords = item
+      console.log(this.keywords)
+      this.onSearch()
     }
   }
 }

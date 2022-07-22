@@ -94,9 +94,9 @@ export default {
         // 更新页码，以免报错dic
         this.pre_timestamp = data.data.pre_timestamp
         // loading---加载完，van自动设置为true就不能 继续加载，因此请求完数据设置为false
-        this.loading = false
+        // this.loading = false
       } catch (error) {
-        this.loading = false
+        // this.loading = false
         // 出错时，会执行此处的代码，van组件库以封装好出现文本，加载中的文版要隐藏，因此this.loading=false
         this.error = true
       } finally {
