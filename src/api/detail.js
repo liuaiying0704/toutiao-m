@@ -22,6 +22,19 @@ export const allComments = (source, offset) => {
     }
   })
 }
+// 评论
+// source文章id
+export const allRequests = (source, offset) => {
+  return request({
+    url: '/v1_0/comments',
+    params: {
+      type: 'c',
+      source,
+      offset
+    }
+  })
+}
+
 // 关注用户
 export const attentionUser = (userid) => {
   return request({
@@ -74,5 +87,28 @@ export const deleteLikings = (target) => {
   return request({
     method: 'DELETE',
     url: `/v1_0/article/likings/${target}`
+  })
+}
+// 发表评论
+export const publishComment = (target, content) => {
+  return request({
+    method: 'POST',
+    url: '/v1_0/comments',
+    data: {
+      target,
+      content
+    }
+  })
+}
+// 对评论回复
+export const publishRequest = (target, content, requestId) => {
+  return request({
+    method: 'POST',
+    url: '/v1_0/comments',
+    data: {
+      target,
+      content,
+      art_id: requestId
+    }
   })
 }

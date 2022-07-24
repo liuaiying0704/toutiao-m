@@ -57,60 +57,14 @@
     </div>
 
     <!-- 评论列表 13-16-12-->
-    <div class="comment">
-      <van-list
-        v-model="loading"
-        :error.sync="error"
-        error-text="请求失败，点击重新加载"
-        :finished="finished"
-        finished-text="没有更多了"
-        @load="onLoad"
-        loading-text="加载中，请稍后"
-      >
-        <van-cell v-for="(item, index) in articleComments" :key="index">
-          <van-row class="row-comment">
-            <van-col span="3">
-              <van-image
-                round
-                width="35px"
-                height="35px"
-                :src="item.aut_photo"
-              />
-            </van-col>
-            <van-col span="21">
-              <div class="textName">
-                <span>{{ item.aut_name }}</span>
-                <button class="request-button btn1">
-                  <van-icon name="good-job-o" /> 赞 {{ item.like_count }}
-                </button>
-              </div>
-              <div class="textNumber">{{ item.content }}</div>
-              <div class="textTime">
-                {{ item.pubdate | toTime }}
-                <button
-                  type="default"
-                  class="request-button"
-                  @click="show = true"
-                >
-                  回复 {{ item.reply_count }}
-                  <!-- <Reply ref="showPopup"></Reply> -->
-                  <van-popup
-                    v-model="show"
-                    position="top"
-                    :style="{ height: '99%' }"
-                  >
-                    aa
-                  </van-popup>
-                </button>
-              </div>
-            </van-col>
-          </van-row>
-        </van-cell>
-      </van-list>
-    </div>
+    <CommentList
+      :articleComments="articleComments"
+      :commCount="articleDetailItem.comm_count"
+    ></CommentList>
 
     <!-- 没有更多 -->
     <div class="nomore">没有更多</div>
+
     <!-- 底部 -->
     <div class="articleFooter">
       <van-tabbar class="buttom1">
@@ -122,6 +76,7 @@
           @click="commentShow"
           >评论</van-button
         >
+        <!-- 发布评价 -->
         <van-popup
           v-model="isCommentShow"
           position="bottom"
@@ -140,7 +95,7 @@
             @input="inputPublishFn"
           />
           <span class="publish" v-if="isLength === false">发布</span>
-          <span class="publishLength" v-else>发布</span>
+          <span class="publishLength" v-else @click="publishComment">发布</span>
         </van-popup>
         <van-tabbar-item
           :badge="articleDetailItem.comm_count"
@@ -150,8 +105,15 @@
           <template #icon>
             <van-icon
               name="star-o"
-              :class="{ current: articleDetailItem.is_collected === true }"
+              v-if="articleDetailItem.is_collected !== true"
               @click="collectedFn"
+            />
+            <!-- 收藏 -->
+            <van-icon
+              name="star-o"
+              v-else
+              @click="collectedFn"
+              class="current"
             />
           </template>
         </van-tabbar-item>
@@ -159,9 +121,14 @@
           <template #icon>
             <van-icon
               name="good-job-o"
-              :class="{
-                attitude: articleDetailItem.attitude === 1 ? true : false
-              }"
+              @click="likeFn"
+              v-if="articleDetailItem.attitude !== 1"
+            />
+            <!-- 点赞 -->
+            <van-icon
+              name="good-job-o"
+              class="attitude"
+              v-else
               @click="likeFn"
             />
           </template>
@@ -176,36 +143,35 @@
   </div>
 </template>
 <script>
+// API
 import {
   articleDetail,
-  allComments,
   attentionUser,
   deleteAttentionUser,
   collected,
   deleteCollected,
   likings,
-  deleteLikings
+  deleteLikings,
+  publishComment
 } from '@/api/detail'
-import dayjs from '@/utils/dayjs'
+
 import 'github-markdown-css/github-markdown-light.css'
-// import Reply from './component/Reply'
+import CommentList from './component/CommentList.vue'
+
 export default {
   name: 'Detail',
   components: {
-    // Reply
+    CommentList
   },
   data () {
     return {
+      articleTime: '',
       articleDetailItem: {},
       articleComments: {},
       htmlCode: '',
-      error: false,
-      loading: false,
-      finished: false,
-      limit: 20,
-      lastid: '',
       isCommentShow: false,
       author: '',
+      artId: '',
       message: '',
       isLength: false,
       show: false
@@ -213,20 +179,8 @@ export default {
   },
   created () {
     this.articleDetail()
-    this.allComments()
   },
-  computed: {
-    articleTime () {
-      const relativeTime = dayjs(this.articleDetailItem.pubdate).fromNow()
-      return relativeTime
-    }
-  },
-  // 处理循环数据的时间格式化   几年前
-  filters: {
-    toTime (val) {
-      return dayjs(val).fromNow()
-    }
-  },
+
   methods: {
     onClickLeft () {
       this.$router.go(-1)
@@ -236,49 +190,12 @@ export default {
       const res = await articleDetail(this.$router.history.current.query.id)
       this.articleDetailItem = res.data.data
       this.author = res.data.data.aut_id
-      console.log(res)
+      this.artId = res.data.data.art_id // 文章ID
+      // console.log(res)
 
       // console.log(this.$router.history.current.query.id)
     },
-    // 2-1评价列表
-    async allComments () {
-      try {
-        const res = await allComments(this.$router.history.current.query.id)
-        this.articleComments = res.data.data.results
-        this.lastid = res.data.data.last_id
-        // console.log(1, this.lastid)
-        // console.log(this.articleComments)
-        return this.articleComments || []
-      } catch (error) {
-        return []
-      }
-    },
-    // 2-2分页
-    async onLoad () {
-      try {
-        const res = await allComments(
-          this.$router.history.current.query.id,
-          this.lastid
-        )
-        // console.log(res)
-        if (res.data.data.results.length === 0) {
-          this.finished = true
-          this.loading = false
-        }
-        this.articleComments = [
-          ...this.articleComments,
-          ...res.data.data.results
-        ]
-        // console.log(this.articleComments)
-        this.lastid = res.data.data.last_id
-        this.loading = false
-        // console.log(this.lastid)
-      } catch (error) {
-        console.log(error.message)
-        this.loading = false
-        this.error = true
-      }
-    },
+
     // 关注用户
     async attention () {
       try {
@@ -319,7 +236,7 @@ export default {
     // 收藏
     async collected () {
       try {
-        const res = await collected(this.author)
+        const res = await collected(this.artId)
         if (res.status === 201) {
           this.$toast.success('已收藏')
         }
@@ -333,7 +250,7 @@ export default {
     // 取消收藏
     async deleteCollected () {
       try {
-        const res = await deleteCollected(this.author)
+        const res = await deleteCollected(this.artId)
         if (res.status === 204) {
           this.$toast.success('已取消收藏')
         }
@@ -346,7 +263,7 @@ export default {
     // 点赞
     async likings () {
       try {
-        const res = await likings(this.author)
+        const res = await likings(this.artId)
         if (res.status === 201) {
           this.$toast.success('已点赞')
         }
@@ -359,7 +276,7 @@ export default {
     // 取消点赞
     async deleteLikings () {
       try {
-        const res = await deleteLikings(this.author)
+        const res = await deleteLikings(this.artId)
         if (res.status === 204) {
           this.$toast.success('已取消点赞')
         }
@@ -394,17 +311,25 @@ export default {
     inputPublishFn () {
       if (this.message.length !== 0) {
         this.isLength = true
-        console.log(this.message.length)
+        // console.log(this.message.length)
+      } else {
+        this.isLength = false
       }
     },
     // 显示评论
     commentShow () {
       this.isCommentShow = true
     },
-    // 显示点赞弹出层
-    showReplyPopup () {
-      console.log(this.$refs)
-      this.$refs.showPopup.show = true
+    // 发表评论的请求
+    async publishComment () {
+      try {
+        await publishComment(this.artId, this.message)
+        this.message = ''
+        this.isLength = false
+      } catch (error) {
+        console.log(error.message)
+        this.$toast.fail('发布失败')
+      }
     }
   }
 }
@@ -475,7 +400,7 @@ export default {
     font-size: 28px;
     line-height: 100px;
   }
-  // 评论
+  // 评论列表
   .comment {
     .row-comment {
       margin: 20px 32px 0 32px;
@@ -509,6 +434,7 @@ export default {
       border: 2px #ccc solid;
       background-color: #fff;
       margin-left: 20px;
+      line-height: 0.55rem;
     }
   }
   // 底部
@@ -542,8 +468,14 @@ export default {
     width: 246px;
     background-color: #fff;
     color: #000;
-    border: 1px solid #333;
+    border: 0.02667rem solid #eee;
     margin: 20px;
+  }
+  .textName .btn1 {
+    border: none;
+    position: absolute;
+    right: 0;
+    top: 0;
   }
 }
 :deep(pre) {
@@ -551,11 +483,11 @@ export default {
   font-family: monospace;
   white-space: pre;
   overflow: auto;
-  // 发表评论
 }
 .active {
   background-color: #fff;
   color: #333;
+  border: 0.02667rem solid #ebedf0;
 }
 .current {
   color: red;
@@ -564,7 +496,7 @@ export default {
   color: red;
 }
 .publishLength {
-  color: red;
+  color: #6ba3d8;
   position: absolute;
   right: 40px;
   top: 100px;
