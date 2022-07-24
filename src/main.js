@@ -25,7 +25,17 @@ import 'amfe-flexible/index.min.js'
 // // new Date()
 // // console.log(dayjs().format('YYYY-MM-DD HH-mm-ss'))
 
-// 6、
+// 6、使用highlight
+import hljs from 'highlight.js'
+import 'highlight.js/styles/default.css'
+// 代码高亮
+Vue.directive('highlight', function (el) {
+  const blocks = el.querySelectorAll('pre code')
+  blocks.forEach((block) => {
+    hljs.highlightBlock(block)
+  })
+})
+
 Vue.use(Vant)
 
 Vue.config.productionTip = false
