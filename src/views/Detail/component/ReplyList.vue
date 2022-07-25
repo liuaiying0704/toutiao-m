@@ -6,12 +6,19 @@
       :title="`${item.reply_count}条回复`"
       left-arrow
       @click-left="navBarClickLeft"
+      v-if="item.reply_count > 0"
+    />
+    <van-nav-bar
+      :title="`暂无回复`"
+      left-arrow
+      @click-left="navBarClickLeft"
+      v-else
     />
     <!-- 每条评论 -->
     <Reply :item="item"></Reply>
     <!-- 评论回复 -->
     <van-cell title="全部回复" size="large" class="comment-request" />
-    <Commit :article="article" :lastComId="lastComId"></Commit>
+    <Commit :article="article" :lastComId="lastComId" ref="comment"></Commit>
     <!-- 没有更多了 -->
     <van-col span="24" class="nomore">没有更多了</van-col>
     <!-- 底部 -->
@@ -57,7 +64,8 @@ export default {
       active: '',
       message: '',
       isLength: false,
-      commitQuestPopupShow: false
+      commitQuestPopupShow: false,
+      request: []
     }
   },
   // 处理循环数据的时间格式化   几年前
@@ -72,7 +80,6 @@ export default {
     },
     commitQuestPopup () {
       this.isCommentShow = true
-      console.log(11444)
     },
     inputPublishFn () {
       if (this.message.length !== 0) {
@@ -82,10 +89,22 @@ export default {
         this.isLength = false
       }
     },
-    // 发表评论的请求
+    // 点击发布，发表回复评论的请求
     async publishRequest () {
       try {
-        await publishRequest(this.item.com_id, this.message, this.item.aut_id)
+        const res = await publishRequest(
+          this.item.com_id,
+          this.message,
+          this.item.aut_id
+        )
+        // console.log(res)
+        // 添加进入数据立即更新
+        this.request = res.data.data.new_obj
+        this.$refs.comment.article.unshift(this.request)
+        // this.$parent.requestPoppupShow = false
+        this.$parent.requestItem.reply_count++
+
+        // 清空
         this.message = ''
         this.isLength = false
       } catch (error) {
@@ -191,5 +210,9 @@ export default {
 }
 .isLength {
   color: #6ba3d8;
+  position: absolute;
+  right: 8px;
+  top: 92px;
+  font-size: 28px;
 }
 </style>

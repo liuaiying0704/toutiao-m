@@ -105,8 +105,7 @@ export default {
         this.lastid = res.data.data.last_id
         this.commCount = this.articleComments.reply_count
         // console.log(1, this.lastid)
-        // console.log(this.articleComments)
-
+        console.log(this.articleComments)
         return this.articleComments || []
       } catch (error) {
         return []
@@ -139,7 +138,7 @@ export default {
       }
     },
 
-    // 点击没条评论的回复按钮
+    // 点击每条评论的回复按钮
     showRequestPopup (item) {
       // 避免循环popup
       this.requestPoppupShow = true
@@ -149,14 +148,14 @@ export default {
       this.comId = this.requestItem.com_id
       this.allRequests()
     },
-    // 3-1
+    // 3-1获取回复列表
     async allRequests () {
       try {
         const res = await allRequests(this.comId)
         this.articleRequest = res.data.data.results
-        console.log(res)
+        // console.log(res)
         this.lastComId = res.data.data.last_id
-        console.log(1, this.lastComId)
+        // console.log(1, this.lastComId)
         // console.log(this.articleComments)
         return this.articleRequest || []
       } catch (error) {

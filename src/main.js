@@ -28,6 +28,8 @@ import 'amfe-flexible/index.min.js'
 // 6、使用highlight
 import hljs from 'highlight.js'
 import 'highlight.js/styles/default.css'
+// 7\
+
 // 代码高亮
 Vue.directive('highlight', function (el) {
   const blocks = el.querySelectorAll('pre code')
