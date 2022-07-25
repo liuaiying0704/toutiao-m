@@ -60,6 +60,7 @@
     <CommentList
       :articleComments="articleComments"
       :commCount="articleDetailItem.comm_count"
+      ref="comment"
     ></CommentList>
 
     <!-- 没有更多 -->
@@ -315,6 +316,7 @@ export default {
       } else {
         this.isLength = false
       }
+      // this.$refs.comment.articleComments.unshift({})
     },
     // 显示评论
     commentShow () {

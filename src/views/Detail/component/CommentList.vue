@@ -105,8 +105,7 @@ export default {
         this.lastid = res.data.data.last_id
         this.commCount = this.articleComments.reply_count
         // console.log(1, this.lastid)
-        // console.log(this.articleComments)
-
+        console.log(this.articleComments)
         return this.articleComments || []
       } catch (error) {
         return []
