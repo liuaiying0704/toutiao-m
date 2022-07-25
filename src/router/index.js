@@ -31,7 +31,9 @@ const routes = [
   // 搜索页面
   { path: '/search', component: () => import('@/views/Search') },
   // 文章
-  { path: '/detail', component: () => import('@/views/Detail') }
+  { path: '/detail', component: () => import('@/views/Detail') },
+  // 编辑
+  { path: '/user', component: () => import('@/views/User') }
 ]
 const router = new VueRouter({
   routes

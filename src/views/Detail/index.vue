@@ -5,7 +5,7 @@
       left-arrow
       @click-left="onClickLeft"
       class="header"
-      color="#1989fa"
+      color="#fff"
     />
 
     <!--title  -->
@@ -90,7 +90,7 @@
             autosize
             type="textarea"
             maxlength="50"
-            placeholder="输入框内容右对齐"
+            placeholder="输入留言"
             show-word-limit
             input-align="left"
             @input="inputPublishFn"
@@ -175,7 +175,8 @@ export default {
       artId: '',
       message: '',
       isLength: false,
-      show: false
+      show: false,
+      publishList: []
     }
   },
   created () {
@@ -316,16 +317,18 @@ export default {
       } else {
         this.isLength = false
       }
-      // this.$refs.comment.articleComments.unshift({})
     },
     // 显示评论
     commentShow () {
       this.isCommentShow = true
     },
-    // 发表评论的请求
+    // 点击发布，发表评论的请求
     async publishComment () {
       try {
-        await publishComment(this.artId, this.message)
+        const res = await publishComment(this.artId, this.message)
+        this.publishList = res.data.data.new_obj
+        this.$refs.comment.articleComments.unshift(this.publishList)
+        this.articleDetailItem.comm_count++
         this.message = ''
         this.isLength = false
       } catch (error) {
@@ -344,7 +347,8 @@ export default {
     :deep(.van-nav-bar__title) {
       color: #fff;
     }
-    :deep(.van-nav-bar .van-icon) {
+
+    :deep(.van-icon-arrow-left) {
       color: #fff;
     }
   }
